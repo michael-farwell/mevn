@@ -3,18 +3,16 @@ import { defineStore }        from "pinia";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    user: { id: "", name: "" },
+    user: null,
   } as AuthStoreInterface),
   getters: {},
   actions: {
-    connect () {
+    connect (userId: number, userName: string) {
       // Make API call to authenticate user
-      this.user.id = "";
-      this.user.name = "";
+      this.user = { id: userId, name: userName };
     },
     disconnect () {
-      this.user.id = "";
-      this.user.name = "";
+      this.user = null;
     },
   },
 });

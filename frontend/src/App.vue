@@ -1,3 +1,16 @@
+<script
+    setup
+    lang="ts">
+  import { useAuthStore } from "@/store/auth.store";
+  import { storeToRefs }  from "pinia";
+
+  const store = useAuthStore();
+
+  const { user } = storeToRefs(store);
+
+  const logout = () => store.disconnect();
+</script>
+
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
@@ -36,10 +49,17 @@
             About
           </router-link>
           <router-link
+              v-if="!user"
               to="/login"
               class="nav-link active">
             Login
           </router-link>
+          <a
+              v-if="user"
+              @click="logout"
+              class="nav-link active pointer">
+            Logout ({{ user.id }} - {{ user.name }})
+          </a>
         </div>
       </div>
     </div>
@@ -71,3 +91,11 @@
     </div>
   </footer>
 </template>
+
+<style
+    scoped
+    lang="scss">
+.pointer {
+  cursor: pointer;
+}
+</style>
