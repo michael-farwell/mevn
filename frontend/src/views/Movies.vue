@@ -1,9 +1,12 @@
 <script
     setup
     lang="ts">
-  import { ref }            from "vue";
-  import MovieService       from "@/services/MovieService";
   import { MovieInterface } from "@/interfaces/movies.interface";
+  import MovieService       from "@/services/MovieService";
+  import { ref }            from "vue";
+  import { useRouter }      from "vue-router";
+
+  const router = useRouter();
 
   // Data
   let movies = ref([] as MovieInterface[]);
@@ -104,9 +107,11 @@
                 Rated: {{ movie.rated }}
               </p>
               <p class="card-text">{{ movie.plot }}</p>
-              <a class="btn btn-primary">
+              <router-link
+                  class="btn btn-primary"
+                  :to="{name: 'Movie', params: {id: movie._id}}">
                 View Reviews
-              </a>
+              </router-link>
             </div>
           </div>
         </div>
