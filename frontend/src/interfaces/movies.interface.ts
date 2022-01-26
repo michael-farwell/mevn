@@ -1,13 +1,13 @@
-export interface MovieInterface {
+export interface Movie {
   _id: string;
   title: string;
   poster: string;
   plot: string;
   rated: string;
-  reviews: ReviewInterface[];
+  reviews: Review[];
 }
 
-export interface ReviewInterface {
+export interface Review {
   _id: string;
   review: string;
   name: string;

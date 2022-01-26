@@ -1,22 +1,26 @@
 <script
     setup
     lang="ts">
-  import { MovieInterface } from "@/interfaces/movies.interface";
-  import MovieService       from "@/services/MovieService";
-  import moment             from "moment";
-  import { ref }            from "vue";
-  import { useRoute }       from "vue-router";
+  import { Movie }        from "@/interfaces/movies.interface";
+  import MovieService     from "@/services/MovieService";
+  import { useAuthStore } from "@/store/auth.store";
+  import AddReview        from "@/views/AddReview.vue";
+  import moment           from "moment";
+  import { storeToRefs }  from "pinia";
+  import { ref }          from "vue";
+  import { useRoute }     from "vue-router";
 
   const route = useRoute();
+  const store = useAuthStore();
 
-  let movie = ref<MovieInterface>({ _id: "", plot: "", poster: "", rated: "", title: "", reviews: [] });
+  const { user } = storeToRefs(store);
+
+  let movie = ref<Movie>({ _id: "", plot: "", poster: "", rated: "", title: "", reviews: [] });
 
   const getFormattedDate = (date: Date) => moment(date).
       format("Do MMMM YYYY");
-
   const getMovie = async () => {
-    const movieData = await MovieService.getMovie(route.params.id as string);
-    movie.value = movieData;
+    movie.value = await MovieService.getMovie(route.params.id as string);
   };
 
   getMovie();
@@ -40,7 +44,10 @@
         <div class="col-md-6 col-sm-12">
           <p class="card-text">{{ movie.plot }}</p>
           <div>
-            Form to Add Reviews
+            <AddReview
+                v-if="user && user.id"
+                :movie-id="movie._id"
+                @update-movie-info="getMovie" />
           </div>
           <hr>
           <h3>Reviews</h3>

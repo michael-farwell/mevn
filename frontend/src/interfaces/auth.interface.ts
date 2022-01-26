@@ -1,8 +1,8 @@
-export interface AuthStoreInterface {
-  user: UserInterface | null;
+export interface AuthStore {
+  user: User | null;
 }
 
-export interface UserInterface {
+export interface User {
   id: number;
   name: string;
 }

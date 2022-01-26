@@ -1,10 +1,10 @@
-import { AuthStoreInterface } from "@/interfaces/auth.interface";
-import { defineStore }        from "pinia";
+import { AuthStore }   from "@/interfaces/auth.interface";
+import { defineStore } from "pinia";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: null,
-  } as AuthStoreInterface),
+  } as AuthStore),
   getters: {},
   actions: {
     connect (userId: number, userName: string) {

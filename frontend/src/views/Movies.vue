@@ -1,15 +1,15 @@
 <script
     setup
     lang="ts">
-  import { MovieInterface } from "@/interfaces/movies.interface";
-  import MovieService       from "@/services/MovieService";
+  import { Movie }    from "@/interfaces/movies.interface";
+  import MovieService from "@/services/MovieService";
   import { ref }            from "vue";
   import { useRouter }      from "vue-router";
 
   const router = useRouter();
 
   // Data
-  let movies = ref([] as MovieInterface[]);
+  let movies = ref([] as Movie[]);
   let ratings = ref([] as string[]);
   let titleToSearch = ref("");
   let ratingToSearch = ref("");
