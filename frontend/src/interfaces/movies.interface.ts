@@ -9,6 +9,9 @@ export interface Movie {
 
 export interface Review {
   _id: string;
+  user_id: number;
+  movie_id: number;
+  editing: boolean;
   review: string;
   name: string;
   date: Date;

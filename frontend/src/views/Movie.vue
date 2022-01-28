@@ -1,14 +1,15 @@
 <script
     setup
     lang="ts">
-  import { Movie }        from "@/interfaces/movies.interface";
-  import MovieService     from "@/services/MovieService";
-  import { useAuthStore } from "@/store/auth.store";
-  import AddReview        from "@/views/AddReview.vue";
-  import moment           from "moment";
-  import { storeToRefs }  from "pinia";
-  import { ref }          from "vue";
-  import { useRoute }     from "vue-router";
+  import { Movie, Review } from "@/interfaces/movies.interface";
+  import MovieService      from "@/services/MovieService";
+  import { ReviewService } from "@/services/ReviewService";
+  import { useAuthStore }  from "@/store/auth.store";
+  import AddReview         from "@/views/AddReview.vue";
+  import moment            from "moment";
+  import { storeToRefs }   from "pinia";
+  import { ref }           from "vue";
+  import { useRoute }      from "vue-router";
 
   const route = useRoute();
   const store = useAuthStore();
@@ -16,11 +17,50 @@
   const { user } = storeToRefs(store);
 
   let movie = ref<Movie>({ _id: "", plot: "", poster: "", rated: "", title: "", reviews: [] });
+  let newReviewMessage = ref<string>("");
 
+  const deleteReview = async (reviewId: number): Promise<void> => {
+    if (!user.value) {
+      return;
+    }
+
+    const data = {
+      user_id: user.value.id,
+      review_id: reviewId,
+    };
+
+    await ReviewService.deleteReview(data);
+    await getMovie();
+  };
+  const editReview = (review: Review): void => {
+    if (review.editing) {
+      review.review = newReviewMessage.value;
+      saveUpdatedReview(review);
+      review.editing = false;
+    } else {
+      newReviewMessage.value = review.review;
+      review.editing = true;
+    }
+  };
   const getFormattedDate = (date: Date) => moment(date).
       format("Do MMMM YYYY");
   const getMovie = async () => {
-    movie.value = await MovieService.getMovie(route.params.id as string);
+    const movieData = await MovieService.getMovie(route.params.id as string);
+    movieData.reviews = movieData.reviews.map((v: Review) => ({ ...v, editing: false }));
+    movie.value = movieData;
+  };
+  const saveUpdatedReview = async (newReview: Review): Promise<void> => {
+    const data = {
+      review: newReview.review,
+      name: newReview.name,
+      user_id: newReview.user_id,
+      movie_id: newReview.movie_id,
+      review_id: newReview._id,
+    };
+    await ReviewService.updateReview(data);
+  };
+  const verifyAuthorship = (reviewUserId: number): boolean => {
+    return !!user.value && user.value.id === reviewUserId;
   };
 
   getMovie();
@@ -58,9 +98,29 @@
                 :key="review._id">
               <h5 class="card-title">Review by {{ review.name }}</h5>
               <h6 class="card-subtitle mb-2 text-muted">{{ getFormattedDate(review.date) }}</h6>
-              <p class="card-text">{{ review.review }}</p>
-              <a class="btn btn-primary me-3">Edit</a>
-              <a class="btn btn-danger">Delete</a>
+              <p
+                  class="card-text"
+                  v-if="!review.editing">
+                {{ review.review }}
+              </p>
+              <p
+                  class="card-text"
+                  v-if="review.editing">
+                <input
+                    v-model="newReviewMessage"
+                    type="text"
+                    class="form-control" />
+              </p>
+              <a
+                  v-if="verifyAuthorship(review.user_id)"
+                  @click="editReview(review)"
+                  class="btn btn-primary me-3">Edit</a>
+              <a
+                  v-if="verifyAuthorship(review.user_id)"
+                  @click="deleteReview(review._id)"
+                  class="btn btn-danger">
+                Delete
+              </a>
             </li>
           </ul>
         </div>
