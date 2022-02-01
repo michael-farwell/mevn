@@ -1,37 +1,62 @@
 <script
     setup
     lang="ts">
-  import { Movie }    from "@/interfaces/movies.interface";
-  import MovieService from "@/services/MovieService";
-  import { ref }            from "vue";
-  import { useRouter }      from "vue-router";
+  import { Movie }     from "@/interfaces/movies.interface";
+  import MovieService  from "@/services/MovieService";
+  import { ref }       from "vue";
+  import { useRouter } from "vue-router";
 
   const router = useRouter();
 
   // Data
-  let movies = ref([] as Movie[]);
-  let ratings = ref([] as string[]);
-  let titleToSearch = ref("");
-  let ratingToSearch = ref("");
+  let currentPage = ref<number>(0);
+  let entriesPerPage = ref<number>(20);
+  let movies = ref<Movie[]>([]);
+  let ratings = ref<string[]>([]);
+  let titleToSearch = ref<string>("");
+  let totalPages = ref<number>(0);
+  let typeToSearch = ref<string>("");
+  let ratingToSearch = ref<string>("");
 
   // Methods
   const filterMovies = async (type: string) => {
-    let moviesData;
+    typeToSearch.value = type;
+    currentPage.value = 0;
+    await getMovies();
+  };
+  const getMovies = async () => {
+    let query = "";
 
-    if (type === "title") {
-      moviesData = await MovieService.getMovies(titleToSearch.value, type);
-    } else {
-      moviesData = await MovieService.getMovies(ratingToSearch.value, type);
+    if (typeToSearch.value === "title") {
+      query = titleToSearch.value;
+    } else if (typeToSearch.value === "rated") {
+      query = ratingToSearch.value;
     }
 
+    const moviesData = await MovieService.getMovies(query, typeToSearch.value, currentPage.value);
+
+    totalPages.value = Math.ceil(moviesData.total_results / entriesPerPage.value) - 1;
+
     movies.value = moviesData.movies;
   };
+  const getNextPage = async () => {
+    currentPage.value += 1;
 
-  const getMovies = async () => {
-    const moviesData = await MovieService.getMovies();
-    movies.value = moviesData.movies;
+    if (currentPage.value > totalPages.value) {
+      currentPage.value = totalPages.value;
+    }
+
+    await getMovies();
   };
+  const getPrevPage = async () => {
+    currentPage.value -= 1;
 
+    if (currentPage.value < 0) {
+      currentPage.value = 0;
+    }
+
+    await getMovies();
+  };
   const getRatings = async () => {
     ratings.value = await MovieService.getRatings();
   };
@@ -117,6 +142,34 @@
         </div>
       </div>
     </div>
+
+    <nav>
+      <ul class="pagination ms-3">
+        <li class="page-item">
+          <a
+              class="page-link pointer"
+              @click="getPrevPage()">
+            Get previous {{ entriesPerPage }}
+          </a>
+        </li>
+        <li class="page-item disabled">
+          <a
+              href="#"
+              class="page-link"
+              tabindex="-1"
+              aria-disabled="true">
+            Showing Page: {{ currentPage + 1 }}
+          </a>
+        </li>
+        <li class="page-item">
+          <a
+              class="page-link pointer"
+              @click="getNextPage()">
+            Get next {{ entriesPerPage }}
+          </a>
+        </li>
+      </ul>
+    </nav>
   </div>
 </template>
 
